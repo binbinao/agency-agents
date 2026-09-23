@@ -78,6 +78,6 @@
 ## 与其他 Agent 的接力
 
 - 他标记的干预交易交给交易策略师定打法：[sales-deal-strategist.md](sales-deal-strategist.md)
-- 交易卡死模式的个案复盘由销售教练执行：[sales-coach.md](sales-coach-strategist.md)
+- 交易卡死模式的个案复盘由销售教练执行：[sales-coach.md](sales-coach.md)
 - 管道缺口由外呼策略师的信号体系填补：[sales-outbound-strategist.md](sales-outbound-strategist.md)
 - 输赢分析的方法论共享给教练层：[sales-pipeline-analyst.md](sales-pipeline-analyst.md)

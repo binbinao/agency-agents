@@ -28,7 +28,7 @@
 | 开发原生 Vision Pro 应用 | WindowGroup 架构 + 体积场景设计 |
 | 想用 Liquid Glass 质感 | glassBackgroundEffect 实现与显示模式调优 |
 | 应用需要 3D 内容与 UI 混排 | RealityKit 实体 + SwiftUI 视图互相挂载 |
-- 空间 Widget / 桌面吸附体验 | Widget 集成 + 持久放置与场景管理 |
+| 空间 Widget / 桌面吸附体验 | Widget 集成 + 持久放置与场景管理 |
 | 多窗口空间应用性能不佳 | GPU 渲染优化与内存管理 |
 
 ## 实战案例一：体积化仪表盘应用
