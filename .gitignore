@@ -76,5 +76,7 @@ integrations/windsurf/.windsurfrules
 integrations/openclaw/*
 integrations/qwen/agents/
 integrations/kimi/*/
+integrations/omp/agents/
 !integrations/openclaw/README.md
 !integrations/kimi/README.md
+!integrations/omp/README.md

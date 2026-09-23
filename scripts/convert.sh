@@ -19,6 +19,7 @@
 #   openclaw     — OpenClaw SOUL.md files (openclaw_workspace/<agent>/SOUL.md)
 #   qwen         — Qwen Code SubAgent files (~/.qwen/agents/*.md)
 #   kimi         — Kimi Code CLI agent files (~/.config/kimi/agents/)
+#   omp          — Oh My Pi (omp) subagent files (.omp/agents/*.md)
 #   all          — All tools (default)
 #
 # Output is written to integrations/<tool>/ relative to the repo root.
@@ -407,6 +408,46 @@ ${body}
 HEREDOC
 }
 
+# omp subagent format: single Markdown file with YAML frontmatter in .omp/agents/.
+# Frontmatter: name + description required; optional tools (comma-separated)
+# grants an explicit capability boundary. Agents here are advisory personas,
+# not delegation-isolated workers, so tools is omitted and each agent inherits
+# the parent session's available tools.
+#
+# Docs: https://omp.sh/docs/subagent-authoring
+convert_omp() {
+  local file="$1"
+  local name description tools slug outfile body
+
+  name="$(get_field "name" "$file")"
+  description="$(get_field "description" "$file")"
+  tools="$(get_field "tools" "$file")"
+  slug="$(slugify "$name")"
+  body="$(get_body "$file")"
+
+  outfile="$OUT_DIR/omp/agents/${slug}.md"
+  mkdir -p "$(dirname "$outfile")"
+
+  if [[ -n "$tools" ]]; then
+    cat > "$outfile" <<HEREDOC
+---
+name: ${slug}
+description: ${description}
+tools: [${tools}]
+---
+${body}
+HEREDOC
+  else
+    cat > "$outfile" <<HEREDOC
+---
+name: ${slug}
+description: ${description}
+---
+${body}
+HEREDOC
+  fi
+}
+
 # Aider and Windsurf are single-file formats — accumulate into temp files
 # then write at the end.
 AIDER_TMP="$(mktemp)"
@@ -505,6 +546,7 @@ run_conversions() {
         openclaw)    convert_openclaw    "$file" ;;
         qwen)        convert_qwen        "$file" ;;
         kimi)        convert_kimi        "$file" ;;
+        omp)         convert_omp         "$file" ;;
         aider)       accumulate_aider    "$file" ;;
         windsurf)    accumulate_windsurf "$file" ;;
       esac
@@ -535,7 +577,7 @@ main() {
     esac
   done
 
-  local valid_tools=("antigravity" "gemini-cli" "opencode" "cursor" "aider" "windsurf" "openclaw" "qwen" "kimi" "all")
+  local valid_tools=("antigravity" "gemini-cli" "opencode" "cursor" "aider" "windsurf" "openclaw" "qwen" "kimi" "omp" "all")
   local valid=false
   for t in "${valid_tools[@]}"; do [[ "$t" == "$tool" ]] && valid=true && break; done
   if ! $valid; then
@@ -554,7 +596,7 @@ main() {
 
   local tools_to_run=()
   if [[ "$tool" == "all" ]]; then
-    tools_to_run=("antigravity" "gemini-cli" "opencode" "cursor" "aider" "windsurf" "openclaw" "qwen" "kimi")
+    tools_to_run=("antigravity" "gemini-cli" "opencode" "cursor" "aider" "windsurf" "openclaw" "qwen" "kimi" "omp")
   else
     tools_to_run=("$tool")
   fi
@@ -565,7 +607,7 @@ main() {
 
   if $use_parallel && [[ "$tool" == "all" ]]; then
     # Tools that write to separate dirs can run in parallel; buffer output so each tool's output stays together
-    local parallel_tools=(antigravity gemini-cli opencode cursor openclaw qwen)
+    local parallel_tools=(antigravity gemini-cli opencode cursor openclaw qwen omp)
     local parallel_out_dir
     parallel_out_dir="$(mktemp -d)"
     info "Converting: ${#parallel_tools[@]}/${n_tools} tools in parallel (output buffered per tool)..."

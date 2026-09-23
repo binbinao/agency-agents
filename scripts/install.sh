@@ -20,6 +20,7 @@
 #   windsurf     -- Copy .windsurfrules to current directory
 #   openclaw     -- Copy workspaces to ~/.openclaw/agency-agents/
 #   qwen         -- Copy SubAgents to ~/.qwen/agents/ (user-wide) or .qwen/agents/ (project)
+#   omp          -- Copy subagents to .omp/agents/ in current directory
 #   all          -- Install for all detected tools (default)
 #
 # Flags:
@@ -101,7 +102,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INTEGRATIONS="$REPO_ROOT/integrations"
 
-ALL_TOOLS=(claude-code copilot antigravity gemini-cli opencode openclaw cursor aider windsurf qwen kimi)
+ALL_TOOLS=(claude-code copilot antigravity gemini-cli opencode openclaw cursor aider windsurf qwen kimi omp)
 
 # ---------------------------------------------------------------------------
 # Usage
@@ -143,6 +144,7 @@ detect_openclaw()     { command -v openclaw >/dev/null 2>&1 || [[ -d "${HOME}/.o
 detect_windsurf()     { command -v windsurf >/dev/null 2>&1 || [[ -d "${HOME}/.codeium" ]]; }
 detect_qwen()         { command -v qwen >/dev/null 2>&1 || [[ -d "${HOME}/.qwen" ]]; }
 detect_kimi()         { command -v kimi >/dev/null 2>&1; }
+detect_omp()          { command -v omp >/dev/null 2>&1 || [[ -d "${HOME}/.omp" ]]; }
 
 is_detected() {
   case "$1" in
@@ -157,6 +159,7 @@ is_detected() {
     windsurf)    detect_windsurf    ;;
     qwen)        detect_qwen        ;;
     kimi)        detect_kimi        ;;
+    omp)         detect_omp         ;;
     *)           return 1 ;;
   esac
 }
@@ -175,6 +178,7 @@ tool_label() {
     windsurf)    printf "%-14s  %s" "Windsurf"     "(.windsurfrules)"        ;;
     qwen)        printf "%-14s  %s" "Qwen Code"    "(~/.qwen/agents)"        ;;
     kimi)        printf "%-14s  %s" "Kimi Code"    "(~/.config/kimi/agents)" ;;
+    omp)         printf "%-14s  %s" "Oh My Pi"     "(.omp/agents)"           ;;
   esac
 }
 
@@ -493,6 +497,26 @@ install_kimi() {
   ok "Usage: kimi --agent-file ~/.config/kimi/agents/<agent-name>/agent.yaml"
 }
 
+install_omp() {
+  local src="$INTEGRATIONS/omp/agents"
+  local dest="${PWD}/.omp/agents"
+  local count=0
+
+  [[ -d "$src" ]] || { err "integrations/omp missing. Run ./scripts/convert.sh --tool omp first."; return 1; }
+
+  mkdir -p "$dest"
+
+  local f
+  while IFS= read -r -d '' f; do
+    cp "$f" "$dest/"
+    (( count++ )) || true
+  done < <(find "$src" -maxdepth 1 -name "*.md" -print0)
+
+  ok "Oh My Pi: installed $count subagents -> $dest"
+  warn "Oh My Pi: project-scoped. Run from your project root to install there."
+  warn "Tip: Run /agents then Ctrl+R in omp to refresh, or restart session"
+}
+
 install_tool() {
   case "$1" in
     claude-code) install_claude_code ;;
@@ -506,6 +530,7 @@ install_tool() {
     windsurf)    install_windsurf    ;;
     qwen)        install_qwen        ;;
     kimi)        install_kimi        ;;
+    omp)         install_omp         ;;
   esac
 }
 
